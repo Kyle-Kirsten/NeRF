@@ -366,11 +366,25 @@ def render_rays(ray_batch,
 
     if legendre_integrate:
         rgb_map, disp_map, acc_map, weights, depth_map, raw = fixed_integrate_tensor(network_fn, network_query_fn, rays_o,
-                                                                                rays_d, viewdirs, near, far, N_samples+N_importance,
+                                                                                rays_d, viewdirs, near, far, N_samples,
                                                                                 white_bkgd, raw_noise_std)
+        if N_importance > 0:
+            rgb_map_0, disp_map_0, acc_map_0 = rgb_map, disp_map, acc_map
+
+            run_fn = network_fn if network_fine is None else network_fine
+
+            rgb_map, disp_map, acc_map, weights, depth_map, raw = fixed_integrate_tensor(run_fn, network_query_fn,
+                                                                                         rays_o,
+                                                                                         rays_d, viewdirs, near, far,
+                                                                                         N_samples+N_importance,
+                                                                                         white_bkgd, raw_noise_std)
         ret = {'rgb_map': rgb_map, 'disp_map': disp_map, 'acc_map': acc_map}
         if retraw:
             ret['raw'] = raw
+        if N_importance > 0:
+            ret['rgb0'] = rgb_map_0
+            ret['disp0'] = disp_map_0
+            ret['acc0'] = acc_map_0
         return ret
 
     t_vals = torch.linspace(0., 1., steps=N_samples)

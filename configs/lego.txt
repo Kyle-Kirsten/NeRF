@@ -3,8 +3,8 @@ basedir = ./logs
 datadir = ./data/nerf_synthetic/lego
 dataset_type = blender
 
-no_batching = True
-
+no_batching = False
+i_testset = 2000
 use_viewdirs = True
 white_bkgd = True
 lrate_decay = 500
@@ -17,3 +17,4 @@ precrop_iters = 500
 precrop_frac = 0.5
 
 half_res = True
+raw_noise_std = 1e0
