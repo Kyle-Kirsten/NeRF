@@ -4,7 +4,7 @@ datadir = ./data/nerf_synthetic/chair
 dataset_type = blender
 
 no_batching = False
-i_testset = 10000
+
 use_viewdirs = True
 white_bkgd = True
 lrate_decay = 500

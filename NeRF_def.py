@@ -11,7 +11,7 @@ from scipy import special
 img2mse = lambda x, y: torch.mean((x - y) ** 2)
 mse2psnr = lambda x: -10.0 * torch.log10(x)
 to8b = lambda x: (255 * np.clip(x, 0, 1)).astype(np.uint8)
-max_order = 20
+max_order = 5
 int_legendre = [torch.Tensor(np.array(special.roots_legendre(i))) for i in range(1, max_order + 1)]
 int_laguerre = [torch.Tensor(np.array(special.roots_laguerre(i))) for i in range(1, max_order + 1)]
 
@@ -364,8 +364,11 @@ def fixed_integrate_tensor(network_fn, network_query_fn, rays_o, rays_d, viewdir
     if comp_num == 0:
         comp_num = 1
         order = N_samples
-    mids = torch.linspace(0, 1, steps=comp_num + 1)
-    mids = mids * (upper - lower) + lower  # [num_rays, comp_num+1]
+    mids = torch.linspace(0, 1, steps=comp_num)
+    mids = mids * (upper - lower) + lower  # [num_rays, comp_num]
+    t_rand = torch.rand(mids.shape)[...,:-1]/1.1
+    # t_rand = torch.ones(mids.shape)[...,:-1]/2.0
+    mids = torch.cat([mids[...,:1], mids[...,:-1]*t_rand + mids[...,1:]*(1-t_rand), mids[...,-1:]], dim=-1)
     rays_norm = rays_d.norm(dim=-1)  # [num_rays]
     mids = mids * rays_norm[..., None]
     # Second calc the intp pts, weights and intervals
