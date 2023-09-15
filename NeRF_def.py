@@ -321,7 +321,7 @@ def sample_pdf(bins, weights, N_samples, det=False, pytest=False):
 
 def fixed_integrate_tensor(network_fn, network_query_fn, rays_o, rays_d, viewdirs, lower, upper,
                            N_samples=200,
-                           white_bkgd=False, raw_noise_std=0,
+                           white_bkgd=False, perturb = False, raw_noise_std=0,
                            weight='1'):
     '''
     Calculate integral c*a*exp(-integrate(a*dt))*ds from lower to upper
@@ -366,8 +366,11 @@ def fixed_integrate_tensor(network_fn, network_query_fn, rays_o, rays_d, viewdir
         order = N_samples
     mids = torch.linspace(0, 1, steps=comp_num)
     mids = mids * (upper - lower) + lower  # [num_rays, comp_num]
-    t_rand = torch.rand(mids.shape)[...,:-1]/1.1
-    # t_rand = torch.ones(mids.shape)[...,:-1]/2.0
+    if perturb:
+        t_rand = torch.rand(mids.shape)[..., :-1]/1.5
+        # t_rand = torch.ones(mids.shape)[...,:-1]/2.0
+    else:
+        t_rand = torch.ones(mids.shape)[..., :-1]/2.0
     mids = torch.cat([mids[...,:1], mids[...,:-1]*t_rand + mids[...,1:]*(1-t_rand), mids[...,-1:]], dim=-1)
     rays_norm = rays_d.norm(dim=-1)  # [num_rays]
     mids = mids * rays_norm[..., None]
